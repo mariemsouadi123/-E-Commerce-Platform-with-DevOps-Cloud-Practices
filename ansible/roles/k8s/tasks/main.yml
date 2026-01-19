@@ -1,0 +1,32 @@
+- name: Disable swap
+  command: swapoff -a
+  when: ansible_swaptotal_mb > 0
+
+- name: Remove swap from fstab
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*swap.*)$'
+    replace: '# \1'
+
+- name: Add Kubernetes apt key
+  apt_key:
+    url: https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key
+    state: present
+
+- name: Add Kubernetes repository
+  apt_repository:
+    repo: deb https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /
+    state: present
+
+- name: Install Kubernetes packages
+  apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+
+- name: Hold Kubernetes packages
+  command: apt-mark hold kubelet kubeadm kubectl
+  changed_when: false
+

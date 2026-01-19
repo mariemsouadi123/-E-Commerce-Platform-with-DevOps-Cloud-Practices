@@ -1,0 +1,30 @@
+- name: Install Java, Git, Maven
+  apt:
+    name:
+      - openjdk-17-jdk
+      - git
+      - maven
+    state: present
+
+- name: Add Jenkins GPG key
+  get_url:
+    url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+    dest: /usr/share/keyrings/jenkins-keyring.asc
+    mode: '0644'
+
+- name: Add Jenkins repository
+  apt_repository:
+    repo: deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/
+    state: present
+
+- name: Install Jenkins
+  apt:
+    name: jenkins
+    state: present
+
+- name: Enable Jenkins
+  service:
+    name: jenkins
+    state: started
+    enabled: yes
+
