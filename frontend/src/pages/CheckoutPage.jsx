@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_URL } from '../config';
+
 import { 
   FaShoppingCart, 
   FaArrowLeft, 
@@ -42,7 +44,6 @@ function CheckoutPage() {
   });
 
   const navigate = useNavigate();
-  const API_URL = 'http://localhost:5000/api';
 
   useEffect(() => {
     const token = localStorage.getItem('token');

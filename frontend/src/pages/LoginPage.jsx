@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { FaShoppingCart, FaLock, FaEnvelope, FaArrowLeft } from 'react-icons/fa';
+import { API_URL } from '../config';
 
 function LoginPage() {
   const [loginData, setLoginData] = useState({
@@ -12,7 +13,6 @@ function LoginPage() {
   const [error, setError] = useState('');
   
   const navigate = useNavigate();
-  const API_URL = 'http://localhost:5000/api';
 
   const handleSubmit = async (e) => {
     e.preventDefault();

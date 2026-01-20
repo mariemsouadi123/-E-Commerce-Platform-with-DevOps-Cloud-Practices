@@ -1,0 +1,11 @@
+---
+- hosts: slaves
+  become: true
+
+  collections:
+    - community.general
+
+  tasks:
+    - name: Set system timezone to UTC
+      timezone:
+        name: UTC

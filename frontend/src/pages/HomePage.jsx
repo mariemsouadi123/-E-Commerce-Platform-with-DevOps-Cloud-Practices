@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { API_URL } from '../config';
+
 import { 
   FaShoppingCart, 
   FaStar, 
@@ -29,7 +31,6 @@ function HomePage() {
   const [user, setUser] = useState(null);
   
   const navigate = useNavigate();
-  const API_URL = 'http://localhost:5000/api';
   
   const categories = ['All', 'Electronics', 'Fashion', 'Clothing', 'Home', 'Sports', 'Accessories', 'Kitchen', 'Fitness'];
 

@@ -10,10 +10,15 @@ require('dotenv').config();
 const app = express();
 
 // Middleware
+// Middleware - Allow all origins for development
 app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true
+  origin: '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+app.options('*', cors());
 app.use(express.json());
 
 // Database connection
@@ -35,11 +40,11 @@ async function connectToDatabase() {
       port: process.env.DB_PORT || 3306
     });
 
-    console.log('✅ Connected to MySQL server');
+    console.log(' Connected to MySQL server');
 
     // Create database if it doesn't exist
     await db.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME}`);
-    console.log(`✅ Database '${process.env.DB_NAME}' ready`);
+    console.log(` Database '${process.env.DB_NAME}' ready`);
 
     // Use the database
     await db.query(`USE ${process.env.DB_NAME}`);
@@ -50,10 +55,10 @@ async function connectToDatabase() {
     // Insert sample data
     await insertSampleData();
 
-    console.log('🎉 Database setup completed!');
+    console.log(' Database setup completed!');
   } catch (error) {
-    console.error('❌ Database connection failed:', error.message);
-    console.error('💡 Please check:');
+    console.error(' Database connection failed:', error.message);
+    console.error(' Please check:');
     console.error('   1. Is MySQL running?');
     console.error('   2. Check your password in .env file');
     process.exit(1);
@@ -62,7 +67,7 @@ async function connectToDatabase() {
 
 // Create tables function
 async function createTables() {
-  console.log('🔄 Creating tables...');
+  console.log(' Creating tables...');
 
   // Users table for authentication
   await db.query(`
@@ -138,7 +143,7 @@ async function createTables() {
     )
   `);
 
-  console.log('✅ Tables created successfully');
+  console.log(' Tables created successfully');
 }
 
 // Insert sample data function
@@ -148,7 +153,7 @@ async function insertSampleData() {
     const [users] = await db.query('SELECT COUNT(*) as count FROM users');
     
     if (users[0].count === 0) {
-      console.log('📝 Inserting sample user...');
+      console.log(' Inserting sample user...');
       
       // Hash password for sample user
       const hashedPassword = await bcrypt.hash('password123', 10);
@@ -165,14 +170,14 @@ async function insertSampleData() {
         ['John Doe', 'john@example.com', hashedPassword]
       );
       
-      console.log('✅ Sample users inserted successfully');
+      console.log(' Sample users inserted successfully');
     }
 
     // Check if products table is empty
     const [products] = await db.query('SELECT COUNT(*) as count FROM products');
     
     if (products[0].count === 0) {
-      console.log('📝 Inserting sample products...');
+      console.log(' Inserting sample products...');
       
       // Sample products data
       const sampleProducts = [
@@ -258,10 +263,10 @@ async function insertSampleData() {
         );
       }
 
-      console.log('✅ Sample products inserted successfully');
+      console.log(' Sample products inserted successfully');
     }
   } catch (error) {
-    console.error('❌ Error inserting sample data:', error.message);
+    console.error(' Error inserting sample data:', error.message);
   }
 }
 
@@ -350,9 +355,9 @@ app.post('/api/auth/register', async (req, res) => {
       }
     });
     
-    console.log(`✅ User registered: ${email}`);
+    console.log(` User registered: ${email}`);
   } catch (error) {
-    console.error('❌ Registration error:', error);
+    console.error(' Registration error:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Registration failed' 
@@ -423,9 +428,9 @@ app.post('/api/auth/login', async (req, res) => {
       }
     });
     
-    console.log(`✅ User logged in: ${email}`);
+    console.log(` User logged in: ${email}`);
   } catch (error) {
-    console.error('❌ Login error:', error);
+    console.error('Login error:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Login failed' 
@@ -453,7 +458,7 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
       data: users[0]
     });
   } catch (error) {
-    console.error('❌ Get profile error:', error);
+    console.error(' Get profile error:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Failed to get profile' 
@@ -472,7 +477,7 @@ app.get('/api/products', async (req, res) => {
       data: products
     });
   } catch (error) {
-    console.error('❌ Error fetching products:', error);
+    console.error(' Error fetching products:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Failed to fetch products' 
@@ -498,7 +503,7 @@ app.get('/api/products/:id', async (req, res) => {
       data: products[0]
     });
   } catch (error) {
-    console.error('❌ Error fetching product:', error);
+    console.error(' Error fetching product:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Failed to fetch product' 
@@ -513,7 +518,7 @@ app.post('/api/orders/create', authenticateToken, async (req, res) => {
   try {
     const { customer_name, customer_email, items, total_amount, shipping_address } = req.body;
     
-    console.log('📦 Creating order with data:', { customer_name, customer_email, items, total_amount, shipping_address });
+    console.log(' Creating order with data:', { customer_name, customer_email, items, total_amount, shipping_address });
     
     // Start transaction
     await db.query('START TRANSACTION');
@@ -526,7 +531,7 @@ app.post('/api/orders/create', authenticateToken, async (req, res) => {
     
     const orderId = orderResult.insertId;
     
-    console.log(`✅ Order #${orderId} created`);
+    console.log(` Order #${orderId} created`);
     
     // Add order items
     for (const item of items) {
@@ -547,11 +552,11 @@ app.post('/api/orders/create', authenticateToken, async (req, res) => {
       }
     });
     
-    console.log(`✅ Order #${orderId} completed for ${customer_name}`);
+    console.log(` Order #${orderId} completed for ${customer_name}`);
   } catch (error) {
     // Rollback transaction on error
     await db.query('ROLLBACK');
-    console.error('❌ Error creating order:', error.message);
+    console.error(' Error creating order:', error.message);
     res.status(500).json({ 
       success: false, 
       error: 'Failed to create order: ' + error.message 
@@ -579,7 +584,7 @@ app.get('/api/orders/my-orders', authenticateToken, async (req, res) => {
       data: orders
     });
   } catch (error) {
-    console.error('❌ Error fetching user orders:', error);
+    console.error(' Error fetching user orders:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Failed to fetch orders' 
@@ -619,7 +624,7 @@ app.get('/api/orders/:id', authenticateToken, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Error fetching order:', error);
+    console.error(' Error fetching order:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Failed to fetch order' 
@@ -657,7 +662,7 @@ app.get('/api/admin/orders', authenticateToken, async (req, res) => {
       data: orders
     });
   } catch (error) {
-    console.error('❌ Error fetching all orders:', error);
+    console.error(' Error fetching all orders:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Failed to fetch orders' 
@@ -746,7 +751,7 @@ app.post('/api/payments/process', authenticateToken, async (req, res) => {
         }
       });
       
-      console.log(`✅ Payment successful for order #${order_id}`);
+      console.log(` Payment successful for order #${order_id}`);
     } else {
       // Payment failed
       await db.query(
@@ -765,7 +770,7 @@ app.post('/api/payments/process', authenticateToken, async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('❌ Error processing payment:', error);
+    console.error(' Error processing payment:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Payment processing failed' 
@@ -803,7 +808,7 @@ app.post('/api/reset-db', async (req, res) => {
       message: 'Database reset successfully'
     });
   } catch (error) {
-    console.error('❌ Error resetting database:', error);
+    console.error(' Error resetting database:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Failed to reset database' 
@@ -818,21 +823,9 @@ async function startServer() {
   
   // Start Express server
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-    console.log(`🔐 Authentication Endpoints:`);
-    console.log(`   POST http://localhost:${PORT}/api/auth/register`);
-    console.log(`   POST http://localhost:${PORT}/api/auth/login`);
-    console.log(`   GET  http://localhost:${PORT}/api/auth/me (Protected)`);
-    console.log(`💳 Order Endpoints:`);
-    console.log(`   POST http://localhost:${PORT}/api/orders/create (Protected)`);
-    console.log(`   GET  http://localhost:${PORT}/api/orders/my-orders (Protected)`);
-    console.log(`   POST http://localhost:${PORT}/api/payments/process (Protected)`);
-    console.log(`🔄 Reset DB (Dev only):`);
-    console.log(`   POST http://localhost:${PORT}/api/reset-db`);
-    console.log('\n⚠️  IMPORTANT: If you have database errors, run:');
-    console.log(`   curl -X POST http://localhost:${PORT}/api/reset-db`);
-  });
+  app.listen(PORT,"0.0.0.0" ,() => {
+   console.log(` Server running on port ${PORT}`);
+ });
 }
 
 // Start the application

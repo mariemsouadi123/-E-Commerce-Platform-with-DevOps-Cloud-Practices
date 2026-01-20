@@ -1,0 +1,34 @@
+---
+- hosts: slaves
+  become: true
+
+  collections:
+    - community.mysql
+
+  tasks:
+    - name: Ensure MariaDB server is installed
+      apt:
+        name: mariadb-server
+        state: present
+        update_cache: true
+
+    - name: Ensure MySQL/MariaDB service is running
+      systemd:
+        name: mysql
+        state: started
+        enabled: true
+
+    - name: Create database ecommerce
+      mysql_db:
+        name: ecommerce
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Create database user
+      mysql_user:
+        name: ecommerce_user
+        password: ecommerce_pass
+        priv: "ecommerce.*:ALL"
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
