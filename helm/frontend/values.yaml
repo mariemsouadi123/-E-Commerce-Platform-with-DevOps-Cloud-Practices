@@ -1,0 +1,15 @@
+replicaCount: 1
+
+image:
+  repository: mariemsouadi12189/ecommerce-frontend
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 80
+  nodePort: 30080
+
+env:
+  VITE_API_URL: http://backend:5000
+
